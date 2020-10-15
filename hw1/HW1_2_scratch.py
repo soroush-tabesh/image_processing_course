@@ -117,8 +117,9 @@ def yellow_condition(p):
 
 
 yellow_mask = np.apply_along_axis(yellow_condition, 2, pic_yellow)
-yellow_mask = cv.GaussianBlur(yellow_mask, (9, 9), 1)
+yellow_mask = cv.GaussianBlur(yellow_mask, (9, 9), 1.4)
 yellow_mask = cv.threshold(yellow_mask, 180, 255, cv.THRESH_BINARY)[1]
+yellow_mask[630:, :] = 0
 pic_red = cv.bitwise_and(pic_red, pic_red, mask=yellow_mask)
 pic_yellow_copy = cv.bitwise_and(pic_yellow_copy, pic_yellow_copy, mask=cv.bitwise_not(yellow_mask))
 pic_yellow2red = cv.add(pic_red, pic_yellow_copy)
