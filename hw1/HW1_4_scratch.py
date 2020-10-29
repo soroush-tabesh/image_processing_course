@@ -3,13 +3,14 @@ import numpy as np
 import cv2 as cv
 import matplotlib.pyplot as plt
 from scipy.interpolate import interp1d
+from skimage.exposure import match_histograms
 
 # %% load image
 res_ratio = 0.25
 pic_orig = cv.cvtColor(cv.imread('./data/Dark.jpg'), cv.COLOR_BGR2RGB)
 pic_tar = cv.cvtColor(cv.imread('./data/Pink.jpg'), cv.COLOR_BGR2RGB)
-pic_orig = cv.resize(pic_orig, (0, 0), pic_orig, res_ratio, res_ratio, interpolation=cv.INTER_AREA)
-pic_tar = cv.resize(pic_tar, (0, 0), pic_tar, res_ratio, res_ratio, interpolation=cv.INTER_AREA)
+# pic_orig = cv.resize(pic_orig, (0, 0), pic_orig, res_ratio, res_ratio, interpolation=cv.INTER_AREA)
+# pic_tar = cv.resize(pic_tar, (0, 0), pic_tar, res_ratio, res_ratio, interpolation=cv.INTER_AREA)
 
 plt.gray()
 fig = plt.figure(dpi=200)
@@ -47,3 +48,28 @@ for i in range(3):
 plt.imshow(res)
 plt.show()
 
+# %%
+
+ideal = match_histograms(pic_orig, pic_tar, multichannel=True)
+
+# %%
+imgs = [pic_tar, pic_orig, res, ideal]
+
+fig = plt.figure(figsize=(30, 22.5))
+gs = fig.add_gridspec(3, len(imgs))
+plts = gs.subplots()
+
+color = ('r', 'g', 'b')
+
+for i, img in enumerate(imgs):
+    plts[0][i].imshow(img)
+    for j, col in enumerate(color):
+        histr = cv.calcHist([img], [j], None, [256], [0, 256]).astype(np.float64)
+        histr /= histr.sum()
+        plts[1][i].plot(histr, color=col, linewidth=1)
+        plts[1][i].set_xlim([0, 256])
+        histr = np.cumsum(histr)
+        plts[2][i].plot(histr, color=col, linewidth=1)
+        plts[2][i].set_xlim([0, 256])
+
+plt.show()
