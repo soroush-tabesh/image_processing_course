@@ -21,6 +21,12 @@ plt.show()
 
 
 # %%
+def find_nearest(array, value):
+    array = np.asarray(array)
+    idx = (np.abs(array - value)).argmin()
+    return array[idx], idx
+
+
 def specify_histogram(source, target):
     source_vals, source_freq = np.unique(source.ravel(), return_counts=True)
     target_vals, target_freq = np.unique(target.ravel(), return_counts=True)
@@ -44,14 +50,15 @@ def specify_histogram(source, target):
 # %%
 res = pic_orig.copy()
 for i in range(3):
+    print(f'{i+1} of 3')
     res[:, :, i] = specify_histogram(pic_orig[:, :, i], pic_tar[:, :, i])
 plt.imshow(res)
 plt.show()
 
 # %%
-
+print("start")
 ideal = match_histograms(pic_orig, pic_tar, multichannel=True)
-
+print("end")
 # %%
 imgs = [pic_tar, pic_orig, res, ideal]
 
