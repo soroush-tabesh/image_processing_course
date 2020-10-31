@@ -1,21 +1,10 @@
 # %% imports
 import numpy as np
 import cv2 as cv
-import matplotlib.pyplot as plt
-import time
 from scipy import signal
 
 # %% load image
-pic_orig = cv.imread('./data/melons.tif', cv.IMREAD_ANYDEPTH)
-
-# %% resize image for debug purpose
-res_ratio = 1
-pic = cv.resize(pic_orig, (0, 0), pic_orig, res_ratio, res_ratio, interpolation=cv.INTER_AREA)
-
-# %% show original image
-plt.figure(figsize=(10, 30))
-plt.imshow(pic, cmap='gray')
-plt.show()
+pic = cv.imread('./data/melons.tif', cv.IMREAD_ANYDEPTH)
 
 
 # %% the registration algorithm
@@ -54,7 +43,6 @@ def find_translation(src, tar, ratio, step_offset, min_size) -> (np.ndarray, flo
 
         print(f'Fine tuning at size {src.shape}')
 
-
         mx = 0
         ind = (0, 0)
 
@@ -72,28 +60,25 @@ def find_translation(src, tar, ratio, step_offset, min_size) -> (np.ndarray, flo
 
 
 # %% image partitioning
-t_wd = pic.shape[0] // 3
-pic_b = pic[0:t_wd].astype(float)
-pic_g = pic[t_wd:2 * t_wd].astype(float)
-pic_r = pic[2 * t_wd:t_wd * 3].astype(float)
+t_hg = pic.shape[0] // 3
+pic_b = pic[0:t_hg].astype(float)
+pic_g = pic[t_hg:2 * t_hg].astype(float)
+pic_r = pic[2 * t_hg:t_hg * 3].astype(float)
 
 # %% image registration process
 m_ratio = 0.5
 m_step_offset = 2
 m_min_size = 150
 
-print(f'----start registration of green channel {time.process_time()}')
-g_offset, _1 = find_translation(pic_r.copy(), pic_g.copy(), m_ratio, m_step_offset, m_min_size)
-print(f'start registration of blue channel {time.process_time()}')
-b_offset, _2 = find_translation(pic_r.copy(), pic_b.copy(), m_ratio, m_step_offset, m_min_size)
+print(f'----start registration of green channel')
+g_offset, _ = find_translation(pic_r.copy(), pic_g.copy(), m_ratio, m_step_offset, m_min_size)
+
+print(f'----start registration of blue channel')
+b_offset, _ = find_translation(pic_r.copy(), pic_b.copy(), m_ratio, m_step_offset, m_min_size)
 
 pic_g = np.roll(pic_g, g_offset, (0, 1))
 pic_b = np.roll(pic_b, b_offset, (0, 1))
-pic_res = np.stack((pic_r / 256, pic_g / 256, pic_b / 256), axis=2).astype(int)
 
-# %% show result
+pic_res = np.stack((pic_b / 256, pic_g / 256, pic_r / 256), axis=2).astype(np.uint8)
 
-plt.imshow(pic_res)
-plt.show()
-
-plt.imsave('akbar.jpg', pic_res.astype(np.uint8))
+cv.imwrite('./out/res04.jpg', pic_res)
