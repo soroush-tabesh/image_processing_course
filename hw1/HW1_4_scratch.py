@@ -73,10 +73,11 @@ for i, img in enumerate(imgs):
     for j, col in enumerate(color):
         histr = cv.calcHist([img], [j], None, [256], [0, 256]).astype(np.float64).ravel()
         histr /= histr.sum()
-        plts[1][i].plot(np.nonzero(histr)[0], histr[np.nonzero(histr)], color=col, linewidth=1)
+        plts[1][i].plot(histr, color=col, linewidth=1)
+        plts[1][i].plot(np.nonzero(histr)[0], histr[np.nonzero(histr)], '--', color=col, linewidth=0.5)
         plts[1][i].set_xlim([0, 256])
         histr = np.cumsum(histr)
-        plts[2][i].plot(np.nonzero(histr)[0], histr[np.nonzero(histr)], color=col, linewidth=1)
+        plts[2][i].plot(histr, color=col, linewidth=1)
         plts[2][i].set_xlim([0, 256])
 
 plt.show()
