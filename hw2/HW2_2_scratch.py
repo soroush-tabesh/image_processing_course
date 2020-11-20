@@ -85,11 +85,12 @@ def find_candidates(src, tar, threshold, threshold_sigma):
     locs = list()
     ms = list()
     rs = list()
-    for r in [0.5, 0.4]:
+    for r in [0.5, 0.4,0.7]:
         r_patch = tar.copy()
         # r_patch = cv.GaussianBlur(r_patch, (3, 3), 0)
         r_patch = cv.resize(r_patch, (0, 0), r_patch, r, r, interpolation=cv.INTER_AREA)
 
+        # m = match_template(src, r_patch)
         m = match_template(src, r_patch)
         # m = cv.matchTemplate(src, r_patch, cv.TM_CCOEFF_NORMED)
         # threshold = threshold_sigma * m.std() + m.mean()
@@ -120,16 +121,17 @@ plt.show()
 # %% clustering
 
 ship_cp = ship.copy()
-locs, ms, rs = find_candidates(ship[:, :, 2], patch[:, :, 2], 0.6, 2)
+locs, ms, rs = find_candidates(ship, patch, 0.65, 2)
 msk = np.zeros_like(ship)
 
-bandwidth = cluster.estimate_bandwidth(locs, quantile=0.3) / 4
+bandwidth = cluster.estimate_bandwidth(locs, quantile=0.3)
 algo = cluster.MeanShift(bandwidth=bandwidth, bin_seeding=True)
 lbls = algo.fit_predict(locs)
 cols = [(0, 0, 255), (0, 255, 0), (255, 0, 0), (255, 255, 0), (255, 0, 255), (0, 255, 255), (0, 0, 0)]
-mxx = [np.max(ms[lbls == i]) for i in range(7)]
+mxx = [np.max(ms[lbls == i]) for i in range(lbls.max()+1)]
 for loc, pers, sz, c in zip(locs, ms, rs, lbls):
     msk[loc[0], loc[1]] = (255, 0, 0)
+    print(c)
     if pers != mxx[c]:
         continue
     cv.rectangle(ship_cp, (loc[1], loc[0]),
