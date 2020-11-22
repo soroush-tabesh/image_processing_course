@@ -85,7 +85,7 @@ def find_candidates(src, tar, threshold, threshold_sigma):
     locs = list()
     ms = list()
     rs = list()
-    for r in [0.5, 0.4, 0.7]:
+    for r in np.arange(0.5, 1.1, 0.1):
         r_patch = tar.copy()
         # r_patch = cv.GaussianBlur(r_patch, (3, 3), 0)
         r_patch = cv.resize(r_patch, (0, 0), r_patch, r, r, interpolation=cv.INTER_AREA)
@@ -93,7 +93,7 @@ def find_candidates(src, tar, threshold, threshold_sigma):
         # m = match_template(src, r_patch)
         m = match_template(src, r_patch)
         # m = cv.matchTemplate(src, r_patch, cv.TM_CCOEFF_NORMED)
-        # threshold = threshold_sigma * m.std() + m.mean()
+        threshold = threshold_sigma * m.std() + m.mean()
 
         locs.append(np.argwhere(m > threshold))
         thresholded = m[m > threshold]
@@ -109,7 +109,7 @@ def classify_matches(cands):
 
 ship_cp = ship.copy()
 msk = np.zeros_like(ship)
-locs, ms, rs = find_candidates(ship, patch, 0.65, 2)
+locs, ms, rs = find_candidates(ship, patch, 0.65, 3)
 for loc, pers, sz in zip(locs, ms, rs):
     cv.rectangle(ship_cp, (loc[1], loc[0]),
                  (loc[1] + int(patch.shape[1] * sz), loc[0] + int(patch.shape[0] * sz)), (0, 0, 255), 2)
@@ -133,7 +133,6 @@ cols = [(0, 0, 255), (0, 255, 0), (255, 0, 0), (255, 255, 0), (255, 0, 255), (0,
 mxx = [np.max(ms[lbls == i]) for i in range(lbls.max() + 1)]
 for loc, pers, sz, c in zip(locs, ms, rs, lbls):
     msk[loc[0], loc[1]] = (255, 0, 0)
-    print(c)
     if pers != mxx[c]:
         continue
     cv.rectangle(ship_cp, (loc[1], loc[0]),
