@@ -66,9 +66,9 @@ for b in range(3):
                                          [b_dims[b][0] - 1, b_dims[b][1] - 1], [b_dims[b][0] - 1, 0]]), cv.RANSAC, 5.0)
     mats.append(mat)
     img = warp_perspective(books, mat, tuple(b_dims[b]))
+    img = cv.GaussianBlur(img, (3, 3), 0)
+    img = cv.resize(img, (0, 0), img, 0.5, 0.5, cv.INTER_LINEAR)
     imgs.append(img)
 
 for b, img in enumerate(imgs):
-    img = cv.GaussianBlur(img, (3, 3), 0)
-    img = cv.resize(img, (0, 0), img, 0.5, 0.5, cv.INTER_LINEAR)
     cv.imwrite(f'./out/res0{b + 4}.jpg', img)
