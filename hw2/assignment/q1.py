@@ -1,4 +1,3 @@
-# %%
 import cv2 as cv
 import numpy as np
 import math
@@ -6,7 +5,6 @@ import math
 img_orig = cv.imread('./data/flowers_blur.png')
 
 
-# %%
 def laplacian_of_gaussian(x, y, sigma: float):
     return (x ** 2 + y ** 2 - 2 * sigma ** 2) \
            * math.exp(-(x ** 2 + y ** 2) / (2 * sigma ** 2)) \
@@ -36,7 +34,6 @@ m_sigma = 0.73
 img, lapped = sharpen(img_orig, m_coef, m_ksize, m_sigma)
 
 
-# %%
 def normalize_image(src):
     src = src.copy().astype(float)
     src -= src.mean()

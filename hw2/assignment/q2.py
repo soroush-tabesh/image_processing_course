@@ -1,4 +1,3 @@
-# %%
 import cv2 as cv
 import numpy as np
 from scipy import signal
@@ -7,8 +6,6 @@ from sklearn import cluster
 ship = cv.imread('./data/Greek_ship.jpg')
 patch = cv.imread('./data/patch.png')
 
-
-# %% using clustering
 
 def match_template(src, tar):
     src = src.astype(np.float)
