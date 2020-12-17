@@ -1,5 +1,7 @@
 numpy~=1.18.5
 scipy~=1.4.1
 matplotlib~=3.3.1
-opencv
+scikit-image~=0.17.2
+sklearn~=0.0
 scikit-learn~=0.23.2
+opencv-python
