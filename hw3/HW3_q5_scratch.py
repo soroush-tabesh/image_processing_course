@@ -8,19 +8,19 @@ import ffmpeg
 from scipy import interpolate
 from matplotlib import pyplot as plt
 from skimage import util, exposure, filters, restoration, segmentation
+import matplotlib as mpl
 
-img_o = plt.imread('./data/tasbih.jpg')
-
-n = 100
-s = np.linspace(0, 2 * np.pi, n)
-r = 400 + 300 * np.sin(s)
-c = 450 + 250 * np.cos(s)  # 580 400
-init = np.array([r, c]).T
+mpl.rcParams['toolbar'] = 'None'
 
 
-def imshow(src, pts, line=False, width=1.5, path=None):
+def tellme(s):
+    print(s)
+    plt.title(s, fontsize=16)
+    plt.draw()
+
+
+def imshow(src, pts=None, line=False, width=1.5, path=None):
     src = src.copy()
-    pts = pts.T.astype(int)
 
     plt.figure(dpi=200)
     plt.gca().set_axis_off()
@@ -28,9 +28,13 @@ def imshow(src, pts, line=False, width=1.5, path=None):
     plt.margins(0, 0)
 
     plt.imshow(src)
-    if line:
-        plt.plot(pts[1], pts[0], '-', lw=width)
-    plt.plot(pts[1], pts[0], '.r', markersize=1.5)
+    if pts is not None:
+        pts = np.array(pts)
+        pts = np.concatenate((pts, pts[0][None, :]), axis=0)
+        pts = pts.T.astype(int)
+        if line:
+            plt.plot(pts[1], pts[0], '-', lw=width)
+        plt.plot(pts[1], pts[0], '.r', markersize=1.5)
 
     if path is None:
         plt.show()
@@ -39,7 +43,49 @@ def imshow(src, pts, line=False, width=1.5, path=None):
         plt.close('all')
 
 
-imshow(img_o, init)
+img_o = plt.imread('./data/tasbih.jpg')
+
+plt.clf()
+plt.imshow(img_o)
+
+n = 100
+s = np.linspace(0, 2 * np.pi, n)
+r = 400 + 300 * np.sin(s)
+c = 450 + 250 * np.cos(s)  # 580 400
+init = np.array([r, c]).T
+
+while True:
+    init = []
+    while len(init) < 3:
+        tellme('Select at least 3 corners, press \'esc\' to continue')
+        init = np.asarray(plt.ginput(-1, timeout=-1))
+        if len(init) < 3:
+            tellme('Too few points, starting over')
+            time.sleep(0.2)  # Wait a second
+    tellme('Happy? \'esc\' for yes, mouse click for no')
+    ph = plt.plot(init[:, 0], init[:, 1], 'r', lw=1)
+    if plt.waitforbuttonpress():
+        break
+    for p in ph:
+        p.remove()
+plt.close()
+
+init = init[:, ::-1]
+
+init = np.concatenate((init, init[0][None, :]), axis=0)
+tck, *u = interpolate.splprep(init.T, s=0,k=1)
+unew = np.linspace(0, 1, n)
+init = np.array(interpolate.splev(unew, tck)).T
+init2 = np.concatenate((init, init[0][None, :]), axis=0)
+
+plt.clf()
+plt.imshow(img_o)
+plt.plot(init2[:, 1], init2[:, 0], 'g')
+tellme('Press any key to begin process...')
+plt.waitforbuttonpress()
+plt.close()
+time.sleep(0.5)
+# exit(0)
 # %%
 img = util.img_as_float64(img_o, True)
 img = filters.gaussian(img, 3, multichannel=True)
@@ -55,8 +101,8 @@ img_gr *= img_gr > thr
 img_gr = filters.gaussian(img_gr, 7)
 img_gr /= img_gr.max(initial=1e-12)
 
-plt.imshow(img_gr)
-plt.show()
+# plt.imshow(img_gr)
+# plt.show()
 
 
 # %%
